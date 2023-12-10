@@ -1,6 +1,5 @@
 import parseopt
 import strutils
-import sequtils
 import sets
 
 let p = initOptParser()
@@ -22,13 +21,11 @@ var
     i: int
     j: int
     s_pos = toHashSet("|-LJ7F")
-    tiles: seq[seq[char]]
     path: seq[array[2, int]]
     found_s = false
     last: array[2, int]
 
 for ii in 0..<HEIGHT:
-    tiles.add(toSeq(data[ii]))
     if 'S' in data[ii]:
         i = ii
         j = data[i].find('S')
@@ -66,36 +63,20 @@ while len(path) == 1 or data[i][j] != 'S':
     else:
         j += 1
 
-echo "Part 1: ", len(path) div 2
-
 let loop = toHashSet(path)
 var
     in_loop: int
     flag: bool
-    inside: int
 
 data[i][j] = s_pos.pop
 for i in 0..<HEIGHT:
     flag = false
     for j in 0..<WIDTH:
-        if not flag and [i,j] in loop:
-            flag = true
-            if data[i][j] == 'L':
-                inside = -1
-            elif data[i][j] == 'F':
-                inside = 1
-        elif flag and [i,j] in loop:
-            if inside == -1 and data[i][j] == 'J':
-                flag = false
-            elif inside == 1 and data[i][j] == '7':
-                flag = false
-            elif data[i][j] == 'L':
-                inside = 1
-            elif data[i][j] == 'F':
-                inside = -1
-            elif data[i][j] == '|':
-                flag = false
-        elif flag:
+        if [i,j] in loop and data[i][j] in "JL|":
+            flag = not flag
+
+        elif [i,j] notin loop and flag:
             in_loop += 1
 
+echo "Part 1: ", len(path) div 2
 echo "Part 2: ", in_loop

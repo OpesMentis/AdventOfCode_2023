@@ -56,4 +56,4 @@ for grid in data:
     pattern = grid.split("\r\n")
     total += sum(look_for_mirrors(pattern))
 
-echo total
+echo "Part 1: ", total

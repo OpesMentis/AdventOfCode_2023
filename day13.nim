@@ -1,43 +1,19 @@
 import parseopt
 import strutils
-import math
 
 proc transpose(grid: seq[string]): seq[string] =
-    let width = len(grid[0])
-
-    for j in 0..<width:
+    for j in 0..<len(grid[0]):
         result.add("")
     
     for line in grid:
         for j, ch in line:
             result[j] &= ch
 
-proc look_for_mirrors(pattern: seq[string]): seq[int] =
-    let height = len(pattern)
-    let width = len(pattern[0])
-
-    var mini: int
-    var ko: bool
-    for i in 0..<height-1:
-        ko = false
-        mini = min(i+1, height-i-1)
-        for j in 1..mini:
-            if pattern[i-j+1] != pattern[i+j]:
-                ko = true
-                break
-        if not ko:
-            result.add(100*(i+1))
-    
-    let tpattern = transpose(pattern)
-    for i in 0..<width-1:
-        ko = false
-        mini = min(i+1, width-i-1)
-        for j in 1..mini:
-            if tpattern[i-j+1] != tpattern[i+j]:
-                ko = true
-                break
-        if not ko:
-            result.add(i+1)
+proc diff_string(ch1: string, ch2: string): int =
+    assert len(ch1) == len(ch2)
+    for i in 0..<len(ch1):
+        if ch1[i] != ch2[i]:
+            result += 1
 
 let p = initOptParser()
 let args = p.remainingArgs()
@@ -47,13 +23,45 @@ if len(args) != 1:
 
 let fn = args[0]
 let f = open(fn)
-let data = f.readAll().strip().split("\r\n\r\n")
+let data = f.readAll().strip().split("\n\n")
 f.close()
 
-var pattern: seq[string]
-var total: int
-for grid in data:
-    pattern = grid.split("\r\n")
-    total += sum(look_for_mirrors(pattern))
+var 
+    pattern: seq[string]
+    result: array[2, int]
+    height: int
+    width: int
+    mini: int
+    diff: int
 
-echo "Part 1: ", total
+for grid in data:
+    pattern = grid.split('\n')
+
+    height = len(pattern)
+    width = len(pattern[0])
+
+    for i in 0..<height-1:
+        diff = 0
+        mini = min(i+1, height-i-1)
+        for j in 1..mini:
+            diff += diff_string(pattern[i-j+1], pattern[i+j])
+        
+        if diff == 0:
+            result[0] += 100*(i+1)
+        elif diff == 1:
+            result[1] += 100*(i+1)
+    
+    pattern = transpose(pattern)
+    for i in 0..<width-1:
+        diff = 0
+        mini = min(i+1, width-i-1)
+        for j in 1..mini:
+            diff += diff_string(pattern[i-j+1], pattern[i+j])
+        
+        if diff == 0:
+            result[0] += i+1
+        elif diff == 1:
+            result[1] += i+1
+
+echo "Part 1: ", result[0]
+echo "Part 2: ", result[1]
